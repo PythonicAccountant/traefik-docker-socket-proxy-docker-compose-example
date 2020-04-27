@@ -1,0 +1,55 @@
+version: "3.6"
+
+services:
+        socket-proxy:
+                image: tecnativa/docker-socket-proxy
+                container_name: socket-proxy
+                restart: unless-stopped
+                networks:
+                        - proxy
+                environment:
+                        CONTAINERS: 1
+                volumes:
+                        - /var/run/docker.sock:/var/run/docker.sock:ro
+
+        traefik:
+                image: traefik:v2.2
+                container_name: traefik
+                restart: unless-stopped
+                command:
+                        - --providers.docker=true
+                        - --providers.docker.endpoint=tcp://socket-proxy:2375
+                        - --providers.docker.exposedbydefault=false
+                        - --entrypoints.web.address=:80
+                        - --entrypoints.websecure.address=:443
+                        - --certificatesresolvers.myresolver.acme.httpchallenge=true
+                        - --certificatesresolvers.myresolver.acme.httpchallenge.entrypoint=web
+                        - --certificatesresolvers.myresolver.acme.email=${ACME_EMAIL}
+                        - --certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json
+
+                labels:
+                        - traefik.enable=true
+                        - traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https
+                        - traefik.http.middlewares.redirect-to-https.redirectscheme.permanent=true
+                        - traefik.http.middlewares.redirect-to-https.redirectscheme.port=443
+                        - traefik.http.routers.router1.rule=HostRegexp(`{subdomain:[a-z]+}.${TRAE_DOMAIN_NAME}`)
+                        - traefik.http.routers.router1.entrypoints=web
+                        - traefik.http.routers.router1.middlewares=redirect-to-https
+
+
+                volumes:
+                        - ./letsencrypt:/letsencrypt
+                ports:
+                        - 80:80
+                        - 443:443
+                networks:
+                        - proxy
+                        - web_external
+
+                depends_on:
+                        - socket-proxy
+networks:
+        proxy:
+
+        web_external:
+                external: true
