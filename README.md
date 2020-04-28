@@ -18,11 +18,17 @@ TRAE_DOMAIN_NAME= Domain name attached to your server
 ```bash
 docker network create web_external
 ```
-4. Start it up
+4. Start up Traefik + docker-socket-proxy
 ```bash
 docker-compose -up -d
 ```
 5. Make sure the correct labels are applied to downstream containers. I've included an example with a modifed version of the WhoAmI Example from the Traefik Docs.
+6. The modified WhoAmiExample uses the same domain name set in step 2 with the subdomain **test**. You'll need to set the test subdomain up on your domain or modify the example to use a subdomain that you already have set up and not in use. 
+7. Start up WhoAmI example
+```
+docker-compose -f docker-compose-whoami-example.yml up -d
+```
+8. Visit test.yourdomain.com. It should be using https and display some info about your host and headers etc.
 
 ### Why?
 
