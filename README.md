@@ -10,7 +10,7 @@ git clone https://github.com/PythonicAccountant/traefik-docker-socket-proxy-dock
 ```bash
 vim .env
 ```
-```bash
+```
 ACME_EMAIL= Email address you want to use for your Let's Encrypt certificates
 TRAE_DOMAIN_NAME= Domain name attached to your server
 ```
